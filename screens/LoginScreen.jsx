@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ImageBackground,
-  Image,
   KeyboardAvoidingView,
   ScrollView,
   Platform,
@@ -14,10 +13,9 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as ImagePicker from "expo-image-picker";
 import { useFonts } from "expo-font";
 
-const RegistrationScreen = ({ navigation }) => {
+const LoginScreen = ({ navigation }) => {
   const [fontsLoaded] = useFonts({
     "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
     "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
@@ -25,52 +23,31 @@ const RegistrationScreen = ({ navigation }) => {
   });
 
   const [passwordVisible, setPasswordVisible] = useState(true);
-  const [avatar, setAvatar] = useState(null);
-  const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [activeInput, setActiveInput] = useState(null);
 
-  const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!permissionResult.granted) {
-      alert("Доступ до галереї заборонено!");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
-    }
-  };
-
-  const handleRegister = async () => {
-    if (!userName.trim() || !email.trim() || !password.trim()) {
+  const handleLogin = async () => {
+    if (!email.trim() || !password.trim()) {
       alert("Будь ласка, заповніть усі поля!");
       return;
     }
 
-    const isValidEmail = (email) =>
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!isValidEmail(email)) {
-      alert("Введіть коректну адресу електронної пошти!");
-      return;
-    }
-
-    const userData = { userName, email, avatar, password };
-
     try {
-      await AsyncStorage.setItem("user", JSON.stringify(userData));
-      navigation.navigate("Posts", userData);
+      const storedUser = await AsyncStorage.getItem("user");
+      if (!storedUser) {
+        alert("Користувача не знайдено. Будь ласка, зареєструйтеся.");
+        return;
+      }
+
+      const userData = JSON.parse(storedUser);
+      if (userData.email === email && userData.password === password) {
+        navigation.navigate("Posts", userData);
+      } else {
+        alert("Невірний email або пароль!");
+      }
     } catch (error) {
-      console.error("Помилка збереження користувача:", error);
+      console.error("Помилка входу:", error);
     }
   };
 
@@ -93,41 +70,8 @@ const RegistrationScreen = ({ navigation }) => {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.container}>
-              <View style={styles.avatarWrapper}>
-                <View style={styles.avatarContainer}>
-                  {avatar && (
-                    <Image
-                      source={{ uri: avatar }}
-                      style={styles.avatar}
-                    />
-                  )}
-                  <TouchableOpacity
-                    style={[styles.addIcon, avatar && styles.addIconWithPhoto]}
-                    onPress={pickImage}
-                  >
-                    <Text
-                      style={[styles.addIconText, avatar && styles.addIconTextWithPhoto]}
-                    >
-                      {avatar ? "x" : "+"}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              </View>
+              <Text style={styles.title}>Увійти</Text>
 
-              <Text style={styles.title}>Реєстрація</Text>
-
-              <TextInput
-                placeholder="Логін"
-                placeholderTextColor="#BDBDBD"
-                style={[
-                  styles.input,
-                  activeInput === "userName" && styles.inputFocused,
-                ]}
-                autoCapitalize="none"
-                onFocus={() => setActiveInput("userName")}
-                onBlur={() => setActiveInput(null)}
-                onChangeText={setUserName}
-              />
               <TextInput
                 placeholder="Адреса електронної пошти"
                 placeholderTextColor="#BDBDBD"
@@ -168,12 +112,15 @@ const RegistrationScreen = ({ navigation }) => {
               </View>
               <TouchableOpacity
                 style={styles.button}
-                onPress={handleRegister}
+                onPress={handleLogin}
               >
-                <Text style={styles.buttonText}>Зареєструватися</Text>
+                <Text style={styles.buttonText}>Увійти</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-                <Text style={styles.link}>Вже є акаунт? Увійти</Text>
+              <TouchableOpacity onPress={() => navigation.navigate("Registration")}>
+                <Text style={styles.link}>
+                  Немає акаунту?{" "}
+                  <Text style={styles.registerLink}>Зареєструватися</Text>
+                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -197,59 +144,17 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
     paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 74,
-    alignItems: "center",
+    paddingTop: 32,
+    paddingBottom: 140,
     marginTop: "auto",
-  },
-  avatarWrapper: {
-    position: "absolute",
-    top: -60,
-    alignSelf: "center",
-  },
-  avatarContainer: {
-    backgroundColor: "#F6F6F6",
-    width: 120,
-    height: 120,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  avatar: {
     width: "100%",
-    height: "100%",
-    borderRadius: 20,
-  },
-  addIcon: {
-    position: "absolute",
-    bottom: 2,
-    right: -14,
-    top: 75,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: "#FF6C00",
-    justifyContent: "center",
     alignItems: "center",
-  },
-  addIconWithPhoto: {
-    borderColor: "#BDBDBD",
-    backgroundColor: "#FFF",
-  },
-  addIconText: {
-    color: "#FF6C00",
-    fontSize: 15,
-  },
-  addIconTextWithPhoto: {
-    color: "#BDBDBD",
   },
   title: {
     fontFamily: "Roboto-Bold",
     color: "#212121",
     fontSize: 30,
     marginBottom: 33,
-    marginTop: 32,
   },
   input: {
     fontFamily: "Roboto-Regular",
@@ -306,6 +211,11 @@ const styles = StyleSheet.create({
     color: "#1B4371",
     marginTop: 16,
   },
+  registerLink: {
+    color: "#1B4371",
+    fontFamily: "Roboto-Regular",
+    textDecorationLine: "underline",
+  },
 });
 
-export default RegistrationScreen;
+export default LoginScreen;
