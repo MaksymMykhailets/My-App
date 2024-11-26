@@ -68,7 +68,7 @@ const RegistrationScreen = ({ navigation }) => {
 
     try {
       await AsyncStorage.setItem("user", JSON.stringify(userData));
-      navigation.navigate("Posts", userData);
+      navigation.navigate("Home", userData);
     } catch (error) {
       console.error("Помилка збереження користувача:", error);
     }

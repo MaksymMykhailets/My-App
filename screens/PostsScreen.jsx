@@ -1,54 +1,83 @@
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { Ionicons } from "@expo/vector-icons";
 import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableOpacity,
+  Image,
   Platform,
-  StatusBar
+  StatusBar,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import CreatePostsScreen from "./CreatePostsScreen";
+
+const Tab = createBottomTabNavigator();
 
 const PostsScreen = ({ route, navigation }) => {
-  const { userName, avatar, email } = route.params;
+  const { userName, avatar, email } = route.params || {};
 
-  const handleLogout = () => {
-    navigation.navigate("Login");
-  };
+  const Header = ({ title }) => (
+    <View style={styles.header}>
+      <Text style={styles.headerTitle}>{title}</Text>
+      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+        <Ionicons name="exit-outline" size={24} color="#BDBDBD" />
+      </TouchableOpacity>
+    </View>
+  );
 
-  return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Публікації</Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Ionicons name="exit-outline" size={24} color="#BDBDBD" />
-        </TouchableOpacity>
-      </View>
-
+  const MainPosts = () => (
+    <View style={styles.contentContainer}>
+      <Header title="Публікації" />
       <View style={styles.userInfo}>
-        <Image
-          source={{
-            uri: avatar,
-          }}
-          style={styles.userAvatar}
-        />
+        {avatar && <Image source={{ uri: avatar }} style={styles.userAvatar} />}
         <View>
           <Text style={styles.userName}>{userName || "Unknown User"}</Text>
           <Text style={styles.userEmail}>{email || "email@example.com"}</Text>
         </View>
       </View>
+    </View>
+  );
 
-      <View style={styles.bottomNavigation}>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="grid-outline" size={24} color="#212121" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.addButton}>
-          <Ionicons name="add-outline" size={24} color="#FFF" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navButton}>
-          <Ionicons name="person-outline" size={24} color="#212121" />
-        </TouchableOpacity>
-      </View>
+  const ProfileScreen = () => (
+    <View style={styles.contentContainer}>
+      <Header title="Профіль" />
+      <Text style={styles.placeholder}>Це екран профілю</Text>
+    </View>
+  );
+
+  return (
+    <View style={styles.container}>
+      <Tab.Navigator
+      screenOptions={({ route }) => ({
+    tabBarStyle: route.name === "CreatePost" 
+      ? { display: "none" }
+      : {
+          position: "absolute",
+          backgroundColor: "inherit",
+        },
+    tabBarIcon: ({ focused, color, size }) => {
+      let iconName;
+
+      if (route.name === "Posts") {
+        iconName = focused ? "grid" : "grid-outline";
+      } else if (route.name === "CreatePost") {
+        iconName = focused ? "add-circle" : "add-circle-outline";
+      } else if (route.name === "Profile") {
+        iconName = focused ? "person" : "person-outline";
+      }
+
+      return <Ionicons name={iconName} size={size} color={color} />;
+    },
+    tabBarActiveTintColor: "#FF6C00",
+    tabBarInactiveTintColor: "gray",
+    headerShown: false,
+  })}
+>
+  <Tab.Screen name="Posts" component={MainPosts} />
+  <Tab.Screen name="CreatePost" component={CreatePostsScreen} />
+  <Tab.Screen name="Profile" component={ProfileScreen} />
+      </Tab.Navigator>
+
     </View>
   );
 };
@@ -57,6 +86,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  contentContainer: {
+    flex: 1,
+    paddingBottom: 100,
   },
   header: {
     flexDirection: "row",
@@ -94,30 +127,11 @@ const styles = StyleSheet.create({
     fontFamily: "Roboto-Regular",
     color: "#BDBDBD",
   },
-  bottomNavigation: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    position: "absolute",
-    bottom: 32,
-    left: 0,
-    right: 0,
-    height: 60,
-    borderTopWidth: 1,
-    borderTopColor: "#E8E8E8",
-    backgroundColor: "#fff",
-  },
-  navButton: {
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  addButton: {
-    width: 70,
-    height: 40,
-    backgroundColor: "#FF6C00",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 20,
+  placeholder: {
+    fontFamily: "Roboto-Regular",
+    fontSize: 16,
+    textAlign: "center",
+    marginTop: 20,
   },
 });
 

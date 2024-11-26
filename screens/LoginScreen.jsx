@@ -42,7 +42,7 @@ const LoginScreen = ({ navigation }) => {
 
       const userData = JSON.parse(storedUser);
       if (userData.email === email && userData.password === password) {
-        navigation.navigate("Posts", userData);
+        navigation.navigate("Home", userData);
       } else {
         alert("Невірний email або пароль!");
       }
