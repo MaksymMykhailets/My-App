@@ -8,13 +8,17 @@ import {
   Image,
   Platform,
   StatusBar,
+  FlatList,
 } from "react-native";
 import CreatePostsScreen from "./CreatePostsScreen";
+import { useContext } from "react";
+import { PostsContext } from "./PostsContext";
 
 const Tab = createBottomTabNavigator();
 
 const PostsScreen = ({ route, navigation }) => {
   const { userName, avatar, email } = route.params || {};
+  const { posts } = useContext(PostsContext);
 
   const Header = ({ title }) => (
     <View style={styles.header}>
@@ -35,6 +39,21 @@ const PostsScreen = ({ route, navigation }) => {
           <Text style={styles.userEmail}>{email || "email@example.com"}</Text>
         </View>
       </View>
+      {posts.length === 0 ? (
+        <Text style={styles.noPostsText}>Немає постів</Text>
+      ) : (
+        <FlatList
+          data={posts}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.postContainer}>
+              <Image source={{ uri: item.image }} style={styles.postImage} />
+              <Text style={styles.postTitle}>{item.title}</Text>
+              <Text style={styles.postLocation}>{item.location}</Text>
+            </View>
+          )}
+        />
+      )}
     </View>
   );
 
@@ -48,36 +67,36 @@ const PostsScreen = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <Tab.Navigator
-      screenOptions={({ route }) => ({
-    tabBarStyle: route.name === "CreatePost" 
-      ? { display: "none" }
-      : {
-          position: "absolute",
-          backgroundColor: "inherit",
-        },
-    tabBarIcon: ({ focused, color, size }) => {
-      let iconName;
+        screenOptions={({ route }) => ({
+          tabBarStyle:
+            route.name === "CreatePost"
+              ? { display: "none" }
+              : {
+                  position: "absolute",
+                  backgroundColor: "inherit",
+                },
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
 
-      if (route.name === "Posts") {
-        iconName = focused ? "grid" : "grid-outline";
-      } else if (route.name === "CreatePost") {
-        iconName = focused ? "add-circle" : "add-circle-outline";
-      } else if (route.name === "Profile") {
-        iconName = focused ? "person" : "person-outline";
-      }
+            if (route.name === "Posts") {
+              iconName = focused ? "grid" : "grid-outline";
+            } else if (route.name === "CreatePost") {
+              iconName = focused ? "add-circle" : "add-circle-outline";
+            } else if (route.name === "Profile") {
+              iconName = focused ? "person" : "person-outline";
+            }
 
-      return <Ionicons name={iconName} size={size} color={color} />;
-    },
-    tabBarActiveTintColor: "#FF6C00",
-    tabBarInactiveTintColor: "gray",
-    headerShown: false,
-  })}
->
-  <Tab.Screen name="Posts" component={MainPosts} />
-  <Tab.Screen name="CreatePost" component={CreatePostsScreen} />
-  <Tab.Screen name="Profile" component={ProfileScreen} />
+            return <Ionicons name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: "#FF6C00",
+          tabBarInactiveTintColor: "gray",
+          headerShown: false,
+        })}
+      >
+        <Tab.Screen name="Posts" component={MainPosts} />
+        <Tab.Screen name="CreatePost" component={CreatePostsScreen} />
+        <Tab.Screen name="Profile" component={ProfileScreen} />
       </Tab.Navigator>
-
     </View>
   );
 };
@@ -114,8 +133,8 @@ const styles = StyleSheet.create({
   userAvatar: {
     width: 60,
     height: 60,
-    borderRadius: 30,
-    marginRight: 16,
+    borderRadius: 16,
+    marginRight: 8,
   },
   userName: {
     fontSize: 13,
@@ -123,15 +142,43 @@ const styles = StyleSheet.create({
     color: "#212121",
   },
   userEmail: {
-    fontSize: 11,
+    color: "rgba(33, 33, 33, 0.80)",
     fontFamily: "Roboto-Regular",
+    fontSize: 11,
+  },
+  noPostsText: {
+    textAlign: "center",
+    marginTop: 20,
     color: "#BDBDBD",
+    fontSize: 16,
+  },
+  postContainer: {
+    marginBottom: 16,
+    padding: 10,
+    backgroundColor: "inherit",
+    borderRadius: 8,
+  },
+  postImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+    marginBottom: 8,
+  },
+  postTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#212121",
+  },
+  postLocation: {
+    fontSize: 14,
+    color: "#757575",
   },
   placeholder: {
     fontFamily: "Roboto-Regular",
     fontSize: 16,
     textAlign: "center",
     marginTop: 20,
+    color: "#757575",
   },
 });
 

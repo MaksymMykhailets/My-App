@@ -15,11 +15,14 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import { useContext } from "react";
+import { PostsContext } from "./PostsContext";
 
 const CreatePostsScreen = ({ navigation }) => {
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [image, setImage] = useState(null);
+  const { addPost } = useContext(PostsContext);
 
   const handleClear = () => {
     setTitle("");
@@ -28,11 +31,18 @@ const CreatePostsScreen = ({ navigation }) => {
   };
 
   const handlePublish = () => {
-    if (!title || !location || !image) {
+    const trimmedTitle = title.trim();
+    const trimmedLocation = location.trim();
+  
+    if (!trimmedTitle || !trimmedLocation || !image) {
       alert("Заповніть усі поля перед публікацією!");
       return;
     }
-    navigation.navigate("Posts", { title, location, image });
+  
+    addPost({ title: trimmedTitle, location: trimmedLocation, image });
+  
+    navigation.navigate("Posts");
+    handleClear();
   };
 
   const pickImage = async () => {

@@ -51,21 +51,24 @@ const RegistrationScreen = ({ navigation }) => {
   };
 
   const handleRegister = async () => {
-    if (!userName.trim() || !email.trim() || !password.trim()) {
+    const trimmedUserName = userName.trim();
+    const trimmedEmail = email.trim();
+    const trimmedPassword = password.trim();
+  
+    if (!trimmedUserName || !trimmedEmail || !trimmedPassword) {
       alert("Будь ласка, заповніть усі поля!");
       return;
     }
-
-    const isValidEmail = (email) =>
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-
-    if (!isValidEmail(email)) {
+  
+    const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  
+    if (!isValidEmail(trimmedEmail)) {
       alert("Введіть коректну адресу електронної пошти!");
       return;
     }
-
-    const userData = { userName, email, avatar, password };
-
+  
+    const userData = { userName: trimmedUserName, email: trimmedEmail, avatar, password: trimmedPassword };
+  
     try {
       await AsyncStorage.setItem("user", JSON.stringify(userData));
       navigation.navigate("Home", userData);
