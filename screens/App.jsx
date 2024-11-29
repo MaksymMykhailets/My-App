@@ -8,6 +8,7 @@ import LoginScreen from "./LoginScreen";
 import PostsScreen from "./PostsScreen";
 import CreatePostsScreen from "./CreatePostsScreen";
 import ProfileScreen from "./ProfileScreen";
+import CommentsScreen from "./CommentsScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,9 +42,7 @@ const HomeTabs = ({ route }) => {
         },
       })}
     >
-      <Tab.Screen name="Posts">
-        {() => <PostsScreen {...params} />}
-      </Tab.Screen>
+      <Tab.Screen name="Posts" component={PostsScreen} initialParams={params} />
       <Tab.Screen name="CreatePost" component={CreatePostsScreen} />
       <Tab.Screen name="Profile" component={ProfileScreen} />
     </Tab.Navigator>
@@ -66,6 +65,11 @@ const App = () => (
       <Stack.Screen
         name="Home"
         component={PostsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="CommentsScreen"
+        component={CommentsScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

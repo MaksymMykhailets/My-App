@@ -49,7 +49,24 @@ const PostsScreen = ({ route, navigation }) => {
             <View style={styles.postContainer}>
               <Image source={{ uri: item.image }} style={styles.postImage} />
               <Text style={styles.postTitle}>{item.title}</Text>
-              <Text style={styles.postLocation}>{item.location}</Text>
+              <View style={styles.postActionsContainer}>
+                <TouchableOpacity
+                  style={styles.commentButton}
+                  onPress={() =>
+                    navigation.push("CommentsScreen", {
+                      post: item,
+                      userAvatar: avatar,
+                    })
+                  }
+                >
+                  <Ionicons name="chatbubble-outline" size={16} color="#757575" />
+                  <Text style={styles.commentCount}>{item.comments?.length || 0}</Text>
+                </TouchableOpacity>
+                <View style={styles.locationContainer}>
+                  <Ionicons name="location-outline" size={16} color="#757575" />
+                  <Text style={styles.postLocation}>{item.location}</Text>
+                </View>
+              </View>
             </View>
           )}
         />
@@ -158,6 +175,21 @@ const styles = StyleSheet.create({
     backgroundColor: "inherit",
     borderRadius: 8,
   },
+  postActionsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+  },
+  commentButton: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  commentCount: {
+    marginLeft: 4,
+    fontSize: 16,
+    color: "#757575",
+  },
   postImage: {
     width: "100%",
     height: 200,
@@ -170,8 +202,9 @@ const styles = StyleSheet.create({
     color: "#212121",
   },
   postLocation: {
-    fontSize: 14,
-    color: "#757575",
+    fontSize: 16,
+    color: "#212121",
+    textDecorationLine: "underline",
   },
   placeholder: {
     fontFamily: "Roboto-Regular",
