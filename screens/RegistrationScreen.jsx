@@ -214,14 +214,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#F6F6F6",
     width: 120,
     height: 120,
-    borderRadius: 20,
+    borderRadius: 16,
     justifyContent: "center",
     alignItems: "center",
   },
   avatar: {
     width: "100%",
     height: "100%",
-    borderRadius: 20,
+    borderRadius: 16,
   },
   addIcon: {
     position: "absolute",

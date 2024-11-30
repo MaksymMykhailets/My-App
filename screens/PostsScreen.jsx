@@ -8,11 +8,12 @@ import {
   Image,
   Platform,
   StatusBar,
-  FlatList,
 } from "react-native";
 import CreatePostsScreen from "./CreatePostsScreen";
 import { useContext } from "react";
 import { PostsContext } from "./PostsContext";
+import PostList from "./PostList";
+import ProfileScreen from "./ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 
@@ -42,42 +43,8 @@ const PostsScreen = ({ route, navigation }) => {
       {posts.length === 0 ? (
         <Text style={styles.noPostsText}>Немає постів</Text>
       ) : (
-        <FlatList
-          data={posts}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.postContainer}>
-              <Image source={{ uri: item.image }} style={styles.postImage} />
-              <Text style={styles.postTitle}>{item.title}</Text>
-              <View style={styles.postActionsContainer}>
-                <TouchableOpacity
-                  style={styles.commentButton}
-                  onPress={() =>
-                    navigation.push("CommentsScreen", {
-                      post: item,
-                      userAvatar: avatar,
-                    })
-                  }
-                >
-                  <Ionicons name="chatbubble-outline" size={16} color="#757575" />
-                  <Text style={styles.commentCount}>{item.comments?.length || 0}</Text>
-                </TouchableOpacity>
-                <View style={styles.locationContainer}>
-                  <Ionicons name="location-outline" size={16} color="#757575" />
-                  <Text style={styles.postLocation}>{item.location}</Text>
-                </View>
-              </View>
-            </View>
-          )}
-        />
+      <PostList posts={posts} navigation={navigation} avatar={avatar} />
       )}
-    </View>
-  );
-
-  const ProfileScreen = () => (
-    <View style={styles.contentContainer}>
-      <Header title="Профіль" />
-      <Text style={styles.placeholder}>Це екран профілю</Text>
     </View>
   );
 
@@ -90,7 +57,7 @@ const PostsScreen = ({ route, navigation }) => {
               ? { display: "none" }
               : {
                   position: "absolute",
-                  backgroundColor: "inherit",
+                  backgroundColor: "#fff",
                 },
           tabBarIcon: ({ focused, color, size }) => {
             let iconName;
@@ -126,12 +93,13 @@ const styles = StyleSheet.create({
   contentContainer: {
     flex: 1,
     paddingBottom: 100,
+    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 44,
+    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 60,
     paddingBottom: 16,
     paddingHorizontal: 16,
     borderBottomWidth: 1,
@@ -141,6 +109,9 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontFamily: "Roboto-Medium",
     color: "#212121",
+    flex: 1,
+    textAlign: "center",
+    marginLeft: 20,
   },
   userInfo: {
     flexDirection: "row",
@@ -180,6 +151,10 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginTop: 8,
+  },
+  locationContainer: {
+    flexDirection: "row",
+    alignItems: "center",
   },
   commentButton: {
     flexDirection: "row",

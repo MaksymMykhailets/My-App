@@ -6,7 +6,7 @@ export const PostsProvider = ({ children }) => {
   const [posts, setPosts] = useState([]);
 
   const addPost = (post) => {
-    setPosts((prevPosts) => [...prevPosts, post]);
+    setPosts((prevPosts) => [...prevPosts, { ...post, id: Date.now() }]);
   };
 
   return (
