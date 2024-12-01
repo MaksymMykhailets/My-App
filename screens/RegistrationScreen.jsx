@@ -67,15 +67,30 @@ const RegistrationScreen = ({ navigation }) => {
       return;
     }
   
-    const userData = { userName: trimmedUserName, email: trimmedEmail, avatar, password: trimmedPassword };
-  
     try {
+      const storedUser = await AsyncStorage.getItem("user");
+      if (storedUser) {
+        const existingUser = JSON.parse(storedUser);
+        if (existingUser.email === trimmedEmail) {
+          alert("Користувач із такою електронною адресою вже зареєстрований.");
+          return;
+        }
+      }
+  
+      const userData = {
+        userName: trimmedUserName,
+        email: trimmedEmail,
+        avatar,
+        password: trimmedPassword,
+        isLoggedIn: true,
+      };
+  
       await AsyncStorage.setItem("user", JSON.stringify(userData));
       navigation.navigate("Home", userData);
     } catch (error) {
       console.error("Помилка збереження користувача:", error);
     }
-  };
+  };  
 
   if (!fontsLoaded) {
     return null;

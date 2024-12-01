@@ -13,6 +13,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useContext } from "react";
 import { PostsContext } from "./PostsContext";
 import PostList from "./PostList"; 
+import { Ionicons } from "@expo/vector-icons"; 
 
 const ProfileScreen = ({ navigation, route }) => {
   const { userName: routeUserName, avatar: routeAvatar, posts: routePosts } = route.params || {};
@@ -62,12 +63,28 @@ const ProfileScreen = ({ navigation, route }) => {
     }
   };
 
+  const handleLogout = async () => {
+    try {
+      const storedUser = await AsyncStorage.getItem("user");
+      if (storedUser) {
+        const updatedUser = { ...JSON.parse(storedUser), isLoggedIn: false };
+        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      }
+      navigation.navigate("Login");
+    } catch (error) {
+      Alert.alert("Помилка", "Не вдалося виконати вихід");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <ImageBackground
         source={require("../assets/images/bg.png")}
         style={styles.background}
       >
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Ionicons name="exit-outline" size={24} color="#BDBDBD" />
+        </TouchableOpacity>
         <View style={styles.avatarWrapper}>
           <Image
             source={{ uri: user.avatar || "https://via.placeholder.com/150" }}
@@ -97,6 +114,13 @@ const styles = StyleSheet.create({
   background: {
     height: 200,
     resizeMode: "cover",
+  },
+  logoutButton: {
+    position: "absolute",
+    top: 210,
+    right: 16, 
+    zIndex: 10,
+    color: "#BDBDBD",
   },
   avatarWrapper: {
     position: "absolute",

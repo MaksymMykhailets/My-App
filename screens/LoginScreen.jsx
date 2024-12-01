@@ -32,24 +32,31 @@ const LoginScreen = ({ navigation }) => {
       alert("Будь ласка, заповніть усі поля!");
       return;
     }
-
+  
     try {
       const storedUser = await AsyncStorage.getItem("user");
       if (!storedUser) {
         alert("Користувача не знайдено. Будь ласка, зареєструйтеся.");
         return;
       }
-
+  
       const userData = JSON.parse(storedUser);
+  
       if (userData.email === email && userData.password === password) {
-        navigation.navigate("Home", userData);
+        if (userData.isLoggedIn === false || userData.isLoggedIn === undefined) {
+          userData.isLoggedIn = true;
+          await AsyncStorage.setItem("user", JSON.stringify(userData)); 
+          navigation.navigate("Home", userData);
+        } else {
+          alert("Ви вже увійшли!");
+        }
       } else {
         alert("Невірний email або пароль!");
       }
     } catch (error) {
       console.error("Помилка входу:", error);
     }
-  };
+  };  
 
   if (!fontsLoaded) {
     return null;
