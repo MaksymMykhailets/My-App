@@ -23,10 +23,19 @@ const PostList = ({ posts, navigation, avatar }) => {
               <Ionicons name="chatbubble-outline" size={16} color="#757575" />
               <Text style={styles.commentCount}>{item.comments || 0}</Text>
             </TouchableOpacity>
-            <View style={styles.locationContainer}>
-              <Ionicons name="location-outline" size={16} color="#757575" />
-              <Text style={styles.postLocation}>{item.location}</Text>
-            </View>
+            <TouchableOpacity
+              style={styles.locationContainer}
+              onPress={() =>
+                navigation.push("MapScreen", {
+                  latitude: parseFloat(item.latitude),
+                  longitude: parseFloat(item.longitude),
+                  title: item.title,
+                })
+              }
+            >
+            <Ionicons name="location-outline" size={16} color="#757575" />
+            <Text style={styles.postLocation}>{item.location}</Text>
+            </TouchableOpacity>
           </View>
         </View>
       )}

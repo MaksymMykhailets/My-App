@@ -9,6 +9,7 @@ import PostsScreen from "./PostsScreen";
 import CreatePostsScreen from "./CreatePostsScreen";
 import ProfileScreen from "./ProfileScreen";
 import CommentsScreen from "./CommentsScreen";
+import MapScreen from "./MapScreen";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -70,6 +71,11 @@ const App = () => (
       <Stack.Screen
         name="CommentsScreen"
         component={CommentsScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="MapScreen"
+        component={MapScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

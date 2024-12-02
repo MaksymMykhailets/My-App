@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -18,29 +18,40 @@ import * as ImagePicker from "expo-image-picker";
 import { useContext } from "react";
 import { PostsContext } from "./PostsContext";
 
-const CreatePostsScreen = ({ navigation }) => {
+const CreatePostsScreen = ({ navigation, route }) => {
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [image, setImage] = useState(null);
+  const [coords, setCoords] = useState(null);
   const { addPost } = useContext(PostsContext);
+
+  useEffect(() => {
+    console.log("Отримані параметри:", route.params);
+    if (route.params?.location) {
+      const { latitude, longitude } = route.params.location;
+      setCoords({ latitude, longitude });
+      setLocation(`Широта: ${latitude.toFixed(6)}, Довгота: ${longitude.toFixed(6)}`);
+    }
+  }, [route.params?.location]);
+    
 
   const handleClear = () => {
     setTitle("");
     setLocation("");
     setImage(null);
+    setCoords(null);
   };
 
   const handlePublish = () => {
     const trimmedTitle = title.trim();
-    const trimmedLocation = location.trim();
-  
-    if (!trimmedTitle || !trimmedLocation || !image) {
+
+    if (!trimmedTitle || !location || !image || !coords) {
       alert("Заповніть усі поля перед публікацією!");
       return;
     }
-  
-    addPost({ title: trimmedTitle, location: trimmedLocation, image });
-  
+
+    addPost({ title: trimmedTitle, location, image, ...coords });
+
     navigation.navigate("Posts");
     handleClear();
   };
@@ -64,6 +75,15 @@ const CreatePostsScreen = ({ navigation }) => {
     }
   };
 
+  const handleOpenMap = () => {
+    navigation.navigate("MapScreen", {
+      onLocationSelect: (location) => {
+        setCoords(location);
+        setLocation(`Широта: ${location.latitude.toFixed(6)}, Довгота: ${location.longitude.toFixed(6)}`);
+      },
+    });
+  };
+  
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -96,12 +116,11 @@ const CreatePostsScreen = ({ navigation }) => {
           />
           <View style={styles.locationInputContainer}>
             <Ionicons name="location-outline" size={20} color="#BDBDBD" />
-            <TextInput
-              style={styles.locationInput}
-              placeholder="Місцевість..."
-              value={location}
-              onChangeText={setLocation}
-            />
+            <TouchableOpacity onPress={handleOpenMap}>
+              <Text style={styles.locationInput}>
+                {location || "Оберіть локацію"}
+              </Text>
+            </TouchableOpacity>
           </View>
           <TouchableOpacity
             style={[styles.button, !(title && location && image) && styles.buttonDisabled]}
