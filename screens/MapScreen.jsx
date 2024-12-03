@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { View, StyleSheet, ActivityIndicator, TouchableOpacity, Text } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
@@ -28,21 +28,35 @@ const MapScreen = ({ route, navigation }) => {
     })();
   }, []);
 
-  const handleSelectLocation = (event) => {
+  const handleSelectLocation = async (event) => {
     const coords = event.nativeEvent.coordinate;
-    setSelectedLocation(coords);
-  };
-
+  
+    try {
+      const geocoded = await Location.reverseGeocodeAsync(coords);
+      const address = geocoded[0];
+  
+      setSelectedLocation({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        address: `${address.street || "Невідома вулиця"}, ${address.city || "Невідоме місто"}`,
+      });
+    } catch (error) {
+      setSelectedLocation({
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        address: "Не вдалося визначити адресу",
+      });
+    }
+  }; 
+  
   const handleSaveLocation = () => {
     if (selectedLocation) {
       navigation.goBack();
-      route.params?.onLocationSelect(selectedLocation);
+      route.params?.onLocationSelect(selectedLocation.address);
     } else {
       alert("Оберіть локацію перед збереженням.");
     }
-  };
-  
-    
+  };    
 
   const handleCancel = () => {
     navigation.goBack();
@@ -66,7 +80,7 @@ const MapScreen = ({ route, navigation }) => {
         {selectedLocation && (
           <Marker
             coordinate={selectedLocation}
-            title="Обрана локація"
+            title={selectedLocation.address || "Обрана локація"}
           />
         )}
       </MapView>

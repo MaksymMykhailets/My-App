@@ -26,14 +26,10 @@ const CreatePostsScreen = ({ navigation, route }) => {
   const { addPost } = useContext(PostsContext);
 
   useEffect(() => {
-    console.log("Отримані параметри:", route.params);
     if (route.params?.location) {
-      const { latitude, longitude } = route.params.location;
-      setCoords({ latitude, longitude });
-      setLocation(`Широта: ${latitude.toFixed(6)}, Довгота: ${longitude.toFixed(6)}`);
+      setLocation(route.params.location);
     }
   }, [route.params?.location]);
-    
 
   const handleClear = () => {
     setTitle("");
@@ -45,7 +41,7 @@ const CreatePostsScreen = ({ navigation, route }) => {
   const handlePublish = () => {
     const trimmedTitle = title.trim();
 
-    if (!trimmedTitle || !location || !image || !coords) {
+    if (!trimmedTitle || !location || !image) {
       alert("Заповніть усі поля перед публікацією!");
       return;
     }
@@ -77,12 +73,11 @@ const CreatePostsScreen = ({ navigation, route }) => {
 
   const handleOpenMap = () => {
     navigation.navigate("MapScreen", {
-      onLocationSelect: (location) => {
-        setCoords(location);
-        setLocation(`Широта: ${location.latitude.toFixed(6)}, Довгота: ${location.longitude.toFixed(6)}`);
+      onLocationSelect: (address) => {
+        setLocation(address);
       },
     });
-  };
+  };  
   
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
