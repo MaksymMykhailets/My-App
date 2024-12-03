@@ -1,7 +1,12 @@
+import { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../db/firebase";
+import { setUser, clearUser } from "../redux/users/slice";
 
 import RegistrationScreen from "./RegistrationScreen";
 import LoginScreen from "./LoginScreen";
@@ -50,36 +55,62 @@ const HomeTabs = ({ route }) => {
   );
 };
 
-const App = () => (
-  <NavigationContainer>
-    <Stack.Navigator initialRouteName="Registration">
-      <Stack.Screen
-        name="Registration"
-        component={RegistrationScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Login"
-        component={LoginScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="Home"
-        component={PostsScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="CommentsScreen"
-        component={CommentsScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="MapScreen"
-        component={MapScreen}
-        options={{ headerShown: false }}
-      />
-    </Stack.Navigator>
-  </NavigationContainer>
-);
+const AppContent = () => {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user.user);
 
-export default App;
+  const [isUserChecked, setIsUserChecked] = useState(false);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        dispatch(
+          setUser({
+            uid: currentUser.uid,
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+          })
+        );
+      } else {
+        dispatch(clearUser());
+      }
+      setIsUserChecked(true);
+    });
+
+    return unsubscribe;
+  }, [dispatch]);
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName={user ? "Home" : "Registration"}>
+        <Stack.Screen
+          name="Registration"
+          component={RegistrationScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Home"
+          component={PostsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="CommentsScreen"
+          component={CommentsScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="MapScreen"
+          component={MapScreen}
+          options={{ headerShown: false }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+};
+
+export default AppContent;

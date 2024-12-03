@@ -13,16 +13,14 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import { useFonts } from "expo-font";
+import { useDispatch } from "react-redux";
+import { registerUser } from "../redux/users/operations";
+import { setUser } from "../redux/users/slice";
 
 const RegistrationScreen = ({ navigation }) => {
-  const [fontsLoaded] = useFonts({
-    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
-    "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
-    "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
-  });
+  const dispatch = useDispatch();
 
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [avatar, setAvatar] = useState(null);
@@ -68,33 +66,22 @@ const RegistrationScreen = ({ navigation }) => {
     }
   
     try {
-      const storedUser = await AsyncStorage.getItem("user");
-      if (storedUser) {
-        const existingUser = JSON.parse(storedUser);
-        if (existingUser.email === trimmedEmail) {
-          alert("Користувач із такою електронною адресою вже зареєстрований.");
-          return;
-        }
-      }
-  
-      const userData = {
-        userName: trimmedUserName,
+      const userData = await registerUser({
         email: trimmedEmail,
         avatar,
         password: trimmedPassword,
-        isLoggedIn: true,
-      };
+        displayName: trimmedUserName,
+      });
   
-      await AsyncStorage.setItem("user", JSON.stringify(userData));
-      navigation.navigate("Home", userData);
+      dispatch(setUser(userData));
+  
+      alert("Реєстрація успішна!");
+      navigation.navigate("Home");
     } catch (error) {
-      console.error("Помилка збереження користувача:", error);
+      alert("Не вдалося зареєструватися. Спробуйте ще раз.");
+      console.error("Помилка реєстрації:", error);
     }
-  };  
-
-  if (!fontsLoaded) {
-    return null;
-  }
+  };    
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

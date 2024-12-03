@@ -12,15 +12,12 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFonts } from "expo-font";
+import { useDispatch } from "react-redux";
+import { login } from "../redux/users/operations";
 
 const LoginScreen = ({ navigation }) => {
-  const [fontsLoaded] = useFonts({
-    "Roboto-Regular": require("../assets/fonts/Roboto-Regular.ttf"),
-    "Roboto-Bold": require("../assets/fonts/Roboto-Bold.ttf"),
-    "Roboto-Medium": require("../assets/fonts/Roboto-Medium.ttf"),
-  });
+  const dispatch = useDispatch();
 
   const [passwordVisible, setPasswordVisible] = useState(true);
   const [email, setEmail] = useState("");
@@ -32,35 +29,16 @@ const LoginScreen = ({ navigation }) => {
       alert("Будь ласка, заповніть усі поля!");
       return;
     }
-  
+
     try {
-      const storedUser = await AsyncStorage.getItem("user");
-      if (!storedUser) {
-        alert("Користувача не знайдено. Будь ласка, зареєструйтеся.");
-        return;
-      }
-  
-      const userData = JSON.parse(storedUser);
-  
-      if (userData.email === email && userData.password === password) {
-        if (userData.isLoggedIn === false || userData.isLoggedIn === undefined) {
-          userData.isLoggedIn = true;
-          await AsyncStorage.setItem("user", JSON.stringify(userData)); 
-          navigation.navigate("Home", userData);
-        } else {
-          alert("Ви вже увійшли!");
-        }
-      } else {
-        alert("Невірний email або пароль!");
-      }
+      await dispatch(login({ email, password }));
+
+      navigation.navigate("Home");
     } catch (error) {
+      alert("Невірний email або пароль. Спробуйте ще раз.");
       console.error("Помилка входу:", error);
     }
-  };  
-
-  if (!fontsLoaded) {
-    return null;
-  }
+  };
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
