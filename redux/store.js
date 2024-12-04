@@ -5,7 +5,7 @@ import { combineReducers } from 'redux';
 import userReducer from './users/slice';
 
 const rootReducer = combineReducers({
-  user: userReducer,
+  users: userReducer,
 });
 
 const persistConfig = {

@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../db/firebase";
 import { setUser, clearUser } from "../redux/users/slice";
+import { selectIsAuthenticated } from "../redux/users/selectors";
 
 import RegistrationScreen from "./RegistrationScreen";
 import LoginScreen from "./LoginScreen";
@@ -57,9 +58,7 @@ const HomeTabs = ({ route }) => {
 
 const AppContent = () => {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.user);
-
-  const [isUserChecked, setIsUserChecked] = useState(false);
+  const isAuthenticated = useSelector(selectIsAuthenticated);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -68,13 +67,12 @@ const AppContent = () => {
           setUser({
             uid: currentUser.uid,
             email: currentUser.email,
-            displayName: currentUser.displayName,
+            displayName: currentUser.displayName || "Guest",
           })
         );
       } else {
         dispatch(clearUser());
       }
-      setIsUserChecked(true);
     });
 
     return unsubscribe;
@@ -82,7 +80,7 @@ const AppContent = () => {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName={user ? "Home" : "Registration"}>
+      <Stack.Navigator initialRouteName={isAuthenticated ? "Home" : "Registration"}>
         <Stack.Screen
           name="Registration"
           component={RegistrationScreen}

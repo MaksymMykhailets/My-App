@@ -42,7 +42,7 @@ const RegistrationScreen = ({ navigation }) => {
       aspect: [1, 1],
       quality: 1,
     });
-
+    
     if (!result.canceled) {
       setAvatar(result.assets[0].uri);
     }
@@ -66,14 +66,14 @@ const RegistrationScreen = ({ navigation }) => {
     }
   
     try {
-      const userData = await registerUser({
-        email: trimmedEmail,
-        avatar,
-        password: trimmedPassword,
-        displayName: trimmedUserName,
-      });
-  
-      dispatch(setUser(userData));
+      const userData = await dispatch(
+        registerUser({
+          email: trimmedEmail,
+          avatar,
+          password: trimmedPassword,
+          displayName: trimmedUserName,
+        })
+      ).unwrap();
   
       alert("Реєстрація успішна!");
       navigation.navigate("Home");
@@ -81,7 +81,7 @@ const RegistrationScreen = ({ navigation }) => {
       alert("Не вдалося зареєструватися. Спробуйте ще раз.");
       console.error("Помилка реєстрації:", error);
     }
-  };    
+  };   
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>

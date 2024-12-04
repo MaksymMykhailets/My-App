@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { useFonts } from "expo-font";
 import { useDispatch } from "react-redux";
-import { login } from "../redux/users/operations";
+import { loginUser } from "../redux/users/operations";
 
 const LoginScreen = ({ navigation }) => {
   const dispatch = useDispatch();
@@ -29,10 +29,13 @@ const LoginScreen = ({ navigation }) => {
       alert("Будь ласка, заповніть усі поля!");
       return;
     }
-
+  
     try {
-      await dispatch(login({ email, password }));
-
+      const userData = await dispatch(
+        loginUser({ email, password })
+      ).unwrap();
+  
+      alert("Вхід успішний!");
       navigation.navigate("Home");
     } catch (error) {
       alert("Невірний email або пароль. Спробуйте ще раз.");

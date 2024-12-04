@@ -1,57 +1,67 @@
-import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from 'firebase/auth';
-import { getDatabase, ref as dbRef, set } from 'firebase/database';
-import { auth } from '../../db/firebase';
+import { createAsyncThunk } from "@reduxjs/toolkit";
+import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
+import { getDatabase, ref as dbRef, set } from "firebase/database";
+import { auth } from "../../db/firebase";
 
-export const registerUser = async ({ email, password, displayName, avatar }) => {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+export const registerUser = createAsyncThunk(
+  "users/register",
+  async ({ email, password, displayName, avatar }, { rejectWithValue }) => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const { user } = userCredential;
 
-    let avatarURL = null;
+      let avatarURL = avatar || null;
 
-    await updateProfile(userCredential.user, {
-      displayName,
-      photoURL: avatarURL,
-    });
+      await updateProfile(user, {
+        displayName,
+        photoURL: avatarURL,
+      });
 
-    const db = getDatabase();
-    await set(dbRef(db, `users/${userCredential.user.uid}`), {
-      uid: userCredential.user.uid,
-      email: userCredential.user.email,
-      displayName,
-      avatar: avatarURL,
-      createdAt: new Date().toISOString(),
-    });
+      const db = getDatabase();
+      await set(dbRef(db, `users/${user.uid}`), {
+        uid: user.uid,
+        email: user.email,
+        displayName,
+        avatar: avatarURL,
+        createdAt: new Date().toISOString(),
+      });
 
-    return {
-      uid: userCredential.user.uid,
-      email: userCredential.user.email,
-      displayName,
-      avatar: avatarURL,
-    };
-  } catch (error) {
-    throw new Error(error.message);
+      return {
+        uid: user.uid,
+        email: user.email,
+        displayName,
+        avatar: avatarURL,
+      };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
-};
+);
 
-export const loginUser = async ({ email, password }) => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+export const loginUser = createAsyncThunk(
+  "users/login",
+  async ({ email, password }, { rejectWithValue }) => {
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const { user } = userCredential;
 
-    return {
-      uid: userCredential.user.uid,
-      email: userCredential.user.email,
-      displayName: userCredential.user.displayName,
-    };
-  } catch (error) {
-    throw new Error(error.message);
+      return {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || "No display name",
+        photoURL: user.photoURL || null,
+      };
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
-};
+);
 
-export const logoutUser = async () => {
+export const logoutUser = createAsyncThunk("users/logout", async (_, { rejectWithValue }) => {
   try {
     await signOut(auth);
     return true;
   } catch (error) {
-    throw new Error(error.message);
+    return rejectWithValue(error.message);
   }
-};
+});
