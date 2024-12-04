@@ -79,7 +79,6 @@ const RegistrationScreen = ({ navigation }) => {
       navigation.navigate("Home");
     } catch (error) {
       alert("Не вдалося зареєструватися. Спробуйте ще раз.");
-      console.error("Помилка реєстрації:", error);
     }
   };   
 

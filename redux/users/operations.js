@@ -1,6 +1,6 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { getDatabase, ref as dbRef, set } from "firebase/database";
+import { getDatabase, ref as dbRef, set, update } from "firebase/database";
 import { auth } from "../../db/firebase";
 
 export const registerUser = createAsyncThunk(
@@ -65,3 +65,22 @@ export const logoutUser = createAsyncThunk("users/logout", async (_, { rejectWit
     return rejectWithValue(error.message);
   }
 });
+
+export const updateAvatar = createAsyncThunk(
+  "users/updateAvatar",
+  async (avatarUri, { rejectWithValue }) => {
+    try {
+      const user = auth.currentUser;
+      if (!user) throw new Error("Користувач не авторизований");
+
+      const db = getDatabase();
+      const userRef = dbRef(db, `users/${user.uid}`);
+
+      await update(userRef, { avatar: avatarUri });
+
+      return avatarUri;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);

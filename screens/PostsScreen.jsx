@@ -9,6 +9,8 @@ import {
   Platform,
   StatusBar,
 } from "react-native";
+import { useSelector } from "react-redux";
+import { selectUser } from "../redux/users/selectors";
 import CreatePostsScreen from "./CreatePostsScreen";
 import { useContext } from "react";
 import { PostsContext } from "./PostsContext";
@@ -17,9 +19,8 @@ import ProfileScreen from "./ProfileScreen";
 
 const Tab = createBottomTabNavigator();
 
-const PostsScreen = ({ route, navigation }) => {
-  const { userName, avatar, email } = route.params || {};
-  const { posts } = useContext(PostsContext);
+const PostsScreen = ({ navigation }) => {
+  const user = useSelector(selectUser); 
 
   const Header = ({ title }) => (
     <View style={styles.header}>
@@ -34,17 +35,13 @@ const PostsScreen = ({ route, navigation }) => {
     <View style={styles.contentContainer}>
       <Header title="Публікації" />
       <View style={styles.userInfo}>
-        {avatar && <Image source={{ uri: avatar }} style={styles.userAvatar} />}
+        {user?.avatar && <Image source={{ uri: user.avatar }} style={styles.userAvatar} />}
         <View>
-          <Text style={styles.userName}>{userName || "Unknown User"}</Text>
-          <Text style={styles.userEmail}>{email || "email@example.com"}</Text>
+          <Text style={styles.userName}>{user?.displayName || "Unknown User"}</Text>
+          <Text style={styles.userEmail}>{user?.email || "email@example.com"}</Text>
         </View>
       </View>
-      {posts.length === 0 ? (
-        <Text style={styles.noPostsText}>Немає постів</Text>
-      ) : (
-      <PostList posts={posts} navigation={navigation} avatar={avatar} />
-      )}
+      <PostList posts={[]} navigation={navigation} />
     </View>
   );
 

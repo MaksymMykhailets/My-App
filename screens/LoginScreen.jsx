@@ -39,7 +39,6 @@ const LoginScreen = ({ navigation }) => {
       navigation.navigate("Home");
     } catch (error) {
       alert("Невірний email або пароль. Спробуйте ще раз.");
-      console.error("Помилка входу:", error);
     }
   };
 

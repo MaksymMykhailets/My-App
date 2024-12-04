@@ -8,71 +8,55 @@ import {
   Alert,
   ImageBackground,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
-import { useContext } from "react";
-import { PostsContext } from "./PostsContext";
-import PostList from "./PostList"; 
-import { Ionicons } from "@expo/vector-icons"; 
+import { Ionicons } from "@expo/vector-icons";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser } from "../redux/users/selectors";
+import PostList from "./PostList";
+import { logoutUser, updateAvatar } from "../redux/users/operations";
 
-const ProfileScreen = ({ navigation, route }) => {
-  const { userName: routeUserName, avatar: routeAvatar, posts: routePosts } = route.params || {};
-  const [user, setUser] = useState({ userName: routeUserName, avatar: routeAvatar });
-  const { posts: contextPosts } = useContext(PostsContext);
-
-  useEffect(() => {
-    if (!routeUserName && !routeAvatar) {
-      const fetchUserData = async () => {
-        try {
-          const storedUser = await AsyncStorage.getItem("user");
-          const userData = storedUser ? JSON.parse(storedUser) : {};
-          setUser(userData);
-        } catch (error) {
-          Alert.alert("Помилка", "Не вдалося завантажити дані користувача");
-        }
-      };
-
-      fetchUserData();
-    }
-  }, [routeUserName, routeAvatar]);
+const ProfileScreen = ({ navigation }) => {
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();  
     if (!permissionResult.granted) {
       alert("Доступ до галереї заборонено!");
       return;
     }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const newAvatar = result.assets[0].uri;
-      setUser((prev) => ({ ...prev, avatar: newAvatar }));
-
-      const updatedUser = { ...user, avatar: newAvatar };
-      try {
-        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
-      } catch (error) {
-        Alert.alert("Помилка", "Не вдалося зберегти нову аватарку");
+  
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 1,
+      });
+    
+      if (!result.canceled) {
+        const newAvatar = result.assets[0].uri;
+        console.log("Selected avatar URI:", newAvatar);
+  
+        await dispatch(updateAvatar(newAvatar)).unwrap();
+        Alert.alert("Успіх", "Аватар оновлено!");
+      } else {
+        console.log("User canceled image picker.");
       }
+    } catch (error) {
+      console.error("Error during image picking:", error);
+      Alert.alert("Помилка", `Не вдалося оновити аватар: ${error.message}`);
     }
-  };
+  };     
 
   const handleLogout = async () => {
     try {
-      const storedUser = await AsyncStorage.getItem("user");
-      if (storedUser) {
-        const updatedUser = { ...JSON.parse(storedUser), isLoggedIn: false };
-        await AsyncStorage.setItem("user", JSON.stringify(updatedUser));
+      const result = await dispatch(logoutUser()).unwrap();
+      if (result) {
+        navigation.navigate("Login");
       }
-      navigation.navigate("Login");
     } catch (error) {
-      Alert.alert("Помилка", "Не вдалося виконати вихід");
+      Alert.alert("Помилка", `Не вдалося виконати вихід: ${error}`);
     }
   };
 
@@ -87,21 +71,18 @@ const ProfileScreen = ({ navigation, route }) => {
         </TouchableOpacity>
         <View style={styles.avatarWrapper}>
           <Image
-            source={{ uri: user.avatar || "https://via.placeholder.com/150" }}
+            source={{ uri: user?.avatar }}
             style={styles.avatar}
           />
-          <TouchableOpacity style={styles.addIcon} onPress={pickImage}>
-            <Text style={styles.addIconText}>x</Text>
+          <TouchableOpacity style={styles.addIcon} onPress={() => pickImage()}>
+            <Text style={styles.addIconText}>+</Text>
           </TouchableOpacity>
         </View>
       </ImageBackground>
 
-      <Text style={styles.userName}>{user.userName || "userName"}</Text>
+      <Text style={styles.userName}>{user?.displayName || "Unknown User"}</Text>
 
-      <PostList
-        posts={routePosts || contextPosts} 
-        navigation={navigation}
-      />
+      <PostList posts={[]} navigation={navigation} />
     </View>
   );
 };

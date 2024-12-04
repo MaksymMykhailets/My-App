@@ -16,6 +16,7 @@ import CreatePostsScreen from "./CreatePostsScreen";
 import ProfileScreen from "./ProfileScreen";
 import CommentsScreen from "./CommentsScreen";
 import MapScreen from "./MapScreen";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -60,6 +61,8 @@ const AppContent = () => {
   const dispatch = useDispatch();
   const isAuthenticated = useSelector(selectIsAuthenticated);
 
+  const [isAuthChecked, setIsAuthChecked] = useState(false);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
@@ -73,10 +76,19 @@ const AppContent = () => {
       } else {
         dispatch(clearUser());
       }
+      setIsAuthChecked(true);
     });
 
     return unsubscribe;
   }, [dispatch]);
+
+  if (!isAuthChecked) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#FF6C00" />
+      </View>
+    );
+  }
 
   return (
     <NavigationContainer>
@@ -110,5 +122,14 @@ const AppContent = () => {
     </NavigationContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
+  },
+});
 
 export default AppContent;
