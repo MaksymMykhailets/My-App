@@ -9,18 +9,28 @@ import {
   Platform,
   StatusBar,
 } from "react-native";
-import { useSelector } from "react-redux";
 import { selectUser } from "../redux/users/selectors";
 import CreatePostsScreen from "./CreatePostsScreen";
 import { useContext } from "react";
 import { PostsContext } from "./PostsContext";
 import PostList from "./PostList";
 import ProfileScreen from "./ProfileScreen";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPosts } from "../redux/posts/operations";
+import { selectPosts, selectIsLoading } from "../redux/posts/selectors";
+import { useEffect } from "react";
 
 const Tab = createBottomTabNavigator();
 
 const PostsScreen = ({ navigation }) => {
   const user = useSelector(selectUser); 
+  const dispatch = useDispatch();
+  const posts = useSelector(selectPosts);
+  const isLoading = useSelector(selectIsLoading);
+
+  useEffect(() => {
+    dispatch(fetchPosts());
+  }, [dispatch]);
 
   const Header = ({ title }) => (
     <View style={styles.header}>
@@ -41,7 +51,7 @@ const PostsScreen = ({ navigation }) => {
           <Text style={styles.userEmail}>{user?.email || "email@example.com"}</Text>
         </View>
       </View>
-      <PostList posts={[]} navigation={navigation} />
+      <PostList posts={posts} navigation={navigation} />
     </View>
   );
 

@@ -3,9 +3,11 @@ import { persistReducer, persistStore } from 'redux-persist';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers } from 'redux';
 import userReducer from './users/slice';
+import postsReducer from "./posts/slice";
 
 const rootReducer = combineReducers({
   users: userReducer,
+  posts: postsReducer,
 });
 
 const persistConfig = {

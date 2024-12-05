@@ -12,20 +12,31 @@ import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { selectUser } from "../redux/users/selectors";
+import { fetchPosts } from "../redux/posts/operations";
+import { selectPosts } from "../redux/posts/selectors";
 import PostList from "./PostList";
 import { logoutUser, updateAvatar } from "../redux/users/operations";
 
 const ProfileScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
+  const posts = useSelector(selectPosts);
+
+  useEffect(() => {
+    if (user?.uid) {
+      dispatch(fetchPosts());
+    }
+  }, [dispatch, user?.uid]);
+
+  const userPosts = posts.filter((post) => post.userId === user?.uid);
 
   const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();  
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permissionResult.granted) {
       alert("Доступ до галереї заборонено!");
       return;
     }
-  
+
     try {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -33,21 +44,16 @@ const ProfileScreen = ({ navigation }) => {
         aspect: [1, 1],
         quality: 1,
       });
-    
+
       if (!result.canceled) {
         const newAvatar = result.assets[0].uri;
-        console.log("Selected avatar URI:", newAvatar);
-  
         await dispatch(updateAvatar(newAvatar)).unwrap();
         Alert.alert("Успіх", "Аватар оновлено!");
-      } else {
-        console.log("User canceled image picker.");
       }
     } catch (error) {
-      console.error("Error during image picking:", error);
       Alert.alert("Помилка", `Не вдалося оновити аватар: ${error.message}`);
     }
-  };     
+  };
 
   const handleLogout = async () => {
     try {
@@ -71,10 +77,10 @@ const ProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
         <View style={styles.avatarWrapper}>
           <Image
-            source={{ uri: user?.avatar }}
+            source={{ uri: user?.avatar || "https://via.placeholder.com/150" }}
             style={styles.avatar}
           />
-          <TouchableOpacity style={styles.addIcon} onPress={() => pickImage()}>
+          <TouchableOpacity style={styles.addIcon} onPress={pickImage}>
             <Text style={styles.addIconText}>+</Text>
           </TouchableOpacity>
         </View>
@@ -82,7 +88,7 @@ const ProfileScreen = ({ navigation }) => {
 
       <Text style={styles.userName}>{user?.displayName || "Unknown User"}</Text>
 
-      <PostList posts={[]} navigation={navigation} />
+      <PostList posts={userPosts} navigation={navigation} />
     </View>
   );
 };
@@ -99,7 +105,7 @@ const styles = StyleSheet.create({
   logoutButton: {
     position: "absolute",
     top: 210,
-    right: 16, 
+    right: 16,
     zIndex: 10,
     color: "#BDBDBD",
   },

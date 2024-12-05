@@ -12,24 +12,27 @@ import {
   ScrollView,
   Keyboard,
   TouchableWithoutFeedback,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import { useContext } from "react";
-import { PostsContext } from "./PostsContext";
+import { useDispatch, useSelector } from "react-redux";
+import { selectUser } from "../redux/users/selectors";
+import { addPost } from "../redux/posts/operations";
 
 const CreatePostsScreen = ({ navigation, route }) => {
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
   const [image, setImage] = useState(null);
-  const [coords, setCoords] = useState(null);
-  const { addPost } = useContext(PostsContext);
+
+  const dispatch = useDispatch();
+  const user = useSelector(selectUser);
 
   useEffect(() => {
     if (route.params?.location) {
       setLocation(route.params.location);
     }
-  }, [route.params?.location]);
+  }, [route.params]);
 
   const handleClear = () => {
     setTitle("");
@@ -38,18 +41,29 @@ const CreatePostsScreen = ({ navigation, route }) => {
     setCoords(null);
   };
 
-  const handlePublish = () => {
+  const handlePublish = async () => {
     const trimmedTitle = title.trim();
 
-    if (!trimmedTitle || !location || !image) {
+    if (!trimmedTitle || !image) {
       alert("Заповніть усі поля перед публікацією!");
       return;
     }
 
-    addPost({ title: trimmedTitle, location, image, ...coords });
+    try {
+      const newPost = {
+        title: trimmedTitle,
+        location,
+        image,
+        userId: user?.uid,
+      };
 
-    navigation.navigate("Posts");
-    handleClear();
+      await dispatch(addPost({ userId: user?.uid, post: newPost })).unwrap();
+      Alert.alert("Успіх", "Пост успішно додано!");
+      navigation.navigate("Posts");
+      handleClear();
+    } catch (error) {
+      Alert.alert("Помилка", `Не вдалося опублікувати пост: ${error.message}`);
+    }
   };
 
   const pickImage = async () => {
@@ -77,8 +91,8 @@ const CreatePostsScreen = ({ navigation, route }) => {
         setLocation(address);
       },
     });
-  };  
-  
+  };
+
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <KeyboardAvoidingView
@@ -118,9 +132,12 @@ const CreatePostsScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           </View>
           <TouchableOpacity
-            style={[styles.button, !(title && location && image) && styles.buttonDisabled]}
+            style={[
+              styles.button,
+              !(title && image) && styles.buttonDisabled,
+            ]}
             onPress={handlePublish}
-            disabled={!(title && location && image)}
+            disabled={!(title && image)}
           >
             <Text style={styles.buttonText}>Опублікувати</Text>
           </TouchableOpacity>
